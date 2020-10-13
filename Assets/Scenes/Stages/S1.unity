@@ -249,17 +249,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 0863b4b4dc9ce3b4da85de5852f06baa,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -165.71
+      value: -156.44
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0863b4b4dc9ce3b4da85de5852f06baa,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.09
+      value: -2.22
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0863b4b4dc9ce3b4da85de5852f06baa,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -28.69
+      value: -25.99
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0863b4b4dc9ce3b4da85de5852f06baa,
         type: 3}
@@ -304,12 +304,17 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 0863b4b4dc9ce3b4da85de5852f06baa,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 1
+      value: 5.061
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0863b4b4dc9ce3b4da85de5852f06baa,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 1
+      value: 5.061
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0863b4b4dc9ce3b4da85de5852f06baa,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 5.061
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 0863b4b4dc9ce3b4da85de5852f06baa,
         type: 3}
@@ -551,6 +556,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1062105830 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 0863b4b4dc9ce3b4da85de5852f06baa,
+    type: 3}
+  m_PrefabInstance: {fileID: 123885741}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1062105831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1062105830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35e95dc5ff2b64380880dd7ac5922847, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Size: {x: 1.85, y: 1.77, z: 0.97}
+  m_Center: {x: 0, y: 0, z: 0}
+  m_Area: 3
+  m_AffectedAgents: ffffffff
 --- !u!1001 &2147813417145738690
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -686,6 +713,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Valdo
+      objectReference: {fileID: 0}
+    - target: {fileID: 350558960705375976, guid: f04b2d256f95cda45b3f7dc742c345fc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f04b2d256f95cda45b3f7dc742c345fc, type: 3}
