@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Guard : MonoBehaviour {
 
@@ -8,7 +9,9 @@ public class Guard : MonoBehaviour {
 
     List<Transform> waypoints = new List<Transform>();
 
-    public float speed = 10f;
+
+
+    public float range = 2f;
     public float waitTime = 1f;
     public LayerMask layertoCheck; // sensé etre la couche du joueur
     //spot
@@ -16,6 +19,18 @@ public class Guard : MonoBehaviour {
 
     Color originalSpotColor;
     GameObject player;
+    NavMeshAgent agent;
+    Animator animator;
+
+    static readonly string WALK = "WALK";
+    static readonly string ISEEU = "ISEEU";
+
+
+
+    private void Awake() {
+        agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
+    }
 
     // Start is called before the first frame update
     void Start() {
@@ -28,6 +43,7 @@ public class Guard : MonoBehaviour {
         }
 
         if (waypoints != null && waypoints.Count > 0) {
+            agent.Warp(RandomPoint(waypoints[0].position, range));
             StartCoroutine(Patrol(waypoints));
         }
 
@@ -37,6 +53,8 @@ public class Guard : MonoBehaviour {
     void Update() {
 
         if (ISEEYOU()) {
+            animator.SetTrigger(ISEEU);
+            // end GAME
             spotLight.color = Color.red;
         } else {
             //print("nein");
@@ -50,7 +68,9 @@ public class Guard : MonoBehaviour {
         //print("Range : " + inRange(player.transform.position, spotLight.range));
         //print("Angle : " + isBetweenAngle(transform.forward, dirToPlyer, spotLight.spotAngle));
         //print("Visible : " + isVisible(transform.position, player.transform.position));
-        if (inRange(player.transform.position, spotLight.range) && isBetweenAngle(transform.forward, dirToPlyer, spotLight.spotAngle) && isVisible(transform.position, player.transform.position)) {
+        if (inRange(player.transform.position, spotLight.range)
+            && isBetweenAngle(transform.forward, dirToPlyer, spotLight.spotAngle)
+            && isVisible(transform.position + Vector3.up, dirToPlyer)) {
             return true;
         }
 
@@ -74,14 +94,33 @@ public class Guard : MonoBehaviour {
 
 
     bool isVisible(Vector3 start, Vector3 end) {
-
-
-        if (!Physics.Linecast(start, end, ~layertoCheck)) {
-
-            return true;
+        RaycastHit hit;
+        if (Physics.Raycast(start,end,out hit,Mathf.Infinity,layertoCheck)) {
+            if (hit.transform.CompareTag("Player")) {
+                return true;
+            }
         }
+
         return false;
     }
+
+    bool destinationReached {
+        get {
+            // Check if we've reached the destination
+            if (!agent.pathPending) {
+                if (agent.remainingDistance <= agent.stoppingDistance) {
+                    if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+    Vector3 destination;
+    public float rotationSpeed = 10f;
+    private float turnSmoothVelocity;
+    private float turnSmoothTime = 0.1f;
 
     IEnumerator Patrol(List<Transform> waypoints) {
         transform.position = waypoints[0].position;
@@ -89,24 +128,54 @@ public class Guard : MonoBehaviour {
         int index = 0;
 
         while (true) {
-            transform.position = Vector3.MoveTowards(transform.position, waypoints[index].position, speed * Time.deltaTime);
-            if (transform.position == waypoints[index].position) {
+            //transform.LookAt(waypoints[index].position);
+           
+            //transform.position = Vector3.MoveTowards(transform.position, waypoints[index].position, speed * Time.deltaTime);
+            destination = RandomPoint(waypoints[index].position, range);
+            if (destination != Vector3.zero) {
+                agent.SetDestination(destination);
+                animator.SetBool(WALK, true);
 
-                index = (index + 1) % waypoints.Count;
+                //for (int i = 0; i < agent.path.corners.Length; i++) {
+                //    Vector3 dir = agent.path.corners[i] - transform.position ;
+                //    float targetAngle = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+                //    float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
 
-                yield return new WaitForSeconds(waitTime);
+                //    transform.rotation = Quaternion.Euler(0, angle, 0);
+                //}
+
+                //transform.position == waypoints[index].position
+                if (destinationReached) {
+                    animator.SetBool(WALK, false);
+                    index = (index + 1) % waypoints.Count;
+
+                    yield return new WaitForSeconds(waitTime);
+                }
+                yield return null;
             }
-            yield return null;
+           
+           
         }
 
 
     }
 
+    Vector3 RandomPoint(Vector3 center, float range) {
+        Vector3 result = Vector3.zero;
+        for (int i = 0; i < 30; i++) {
+            Vector3 randomPoint = center + Random.insideUnitSphere * range;
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(randomPoint, out hit, 1.0f, agent.areaMask)) {
+                result = hit.position;
+            }
+        }
+        return result;
+    }
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.green;
         if (player) {
-            //Gizmos.DrawLine(transform.position, player.transform.position);
+            Gizmos.DrawLine(transform.position + Vector3.up, (player.transform.position - transform.position));
             drawAnlge(spotLight.spotAngle, spotLight.range);
         }
 

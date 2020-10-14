@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: 562036e3421595749a27cec3166b8ed6
+guid: 18342a3108d00714f908026fdc62411d
 ModelImporter:
   serializedVersion: 19301
   internalIDToNameTable:
   - first:
-      74: -5675012136141850183
-    second: Valdo_dig03
+      74: -9079770060284934398
+    second: Rubis_idle02
   externalObjects: {}
   materials:
     materialImportMode: 1
@@ -35,11 +35,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Valdo_dig03
-      takeName: Valdo_dig03
+      name: Rubis_idle02
+      takeName: Rubis_idle02
       internalID: 0
       firstFrame: 0
-      lastFrame: 25
+      lastFrame: 75
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -118,11 +118,12 @@ ModelImporter:
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1
-  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: a4dd43b601969a849849bafbef560571,
+    type: 3}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 0
+  avatarSetup: 2
   additionalBone: 0
   userData: 
   assetBundleName: 

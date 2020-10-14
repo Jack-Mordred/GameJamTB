@@ -5,10 +5,10 @@ using UnityEngine.AI;
 
 public class PlayerController : MonoBehaviour {
 
-    public Transform follow;
-    public float movespeed = 2f;
+    public Transform Cam;
+    public float movespeed = 3.5f;
     public float turnSmoothTime = 0.1f;
-
+    public float rotationSpeed = 0.5f;
     float turnSmoothVelocity;
     CharacterController controller;
     NavMeshAgent agent;
@@ -29,18 +29,18 @@ public class PlayerController : MonoBehaviour {
 
     private void Update() {
 
-        Moovement();
+       
 
         //HIDING or na
         if (Input.GetKey(KeyCode.Mouse0) && IsOn(hiddenLayer)) {
-            Debug.Log(" je me cache / animation de creusage tu sais deja");
+            //Debug.Log(" je me cache / animation de creusage tu sais deja");
             Hidding();
         } else if (!Input.GetKey(KeyCode.Mouse0) && IsOn(hiddenLayer)) {
-            Debug.Log("JETAIS CACHE");
+            //Debug.Log("JETAIS CACHE");
             NotHidding();
         }
 
-
+        Moovement();
     }
 
 
@@ -49,15 +49,17 @@ public class PlayerController : MonoBehaviour {
         float vertital = Input.GetAxisRaw("Vertical");
         Vector3 dir = new Vector3(horizontal, 0f, vertital).normalized;
         Walk(dir.magnitude);
-        if (dir.magnitude >= 0.1f) {
+
+        if (dir.magnitude >= 0.1f && !isInState(SPROUT)) {
            
-            float targetAngle = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+            float targetAngle = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg + Cam.eulerAngles.y;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
 
-            transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
-            controller.Move(dir * movespeed * Time.deltaTime);
+            transform.rotation = Quaternion.Euler(0, angle, 0);
+            Vector3 moveDir = Quaternion.Euler(0, targetAngle, 0f) * Vector3.forward;
+            controller.Move(moveDir.normalized * movespeed * Time.deltaTime);
         }
-       
+        controller.Move(Physics.gravity);
     }
 
     
@@ -85,10 +87,9 @@ public class PlayerController : MonoBehaviour {
     #region AnimationControler
 
     Animator animator;
-    static readonly string IDLE  = "IDLE";
     static readonly string WALK  = "WALK";
     static readonly string DIG   = "DIG";
-    //static readonly string SPROUT   = "SPROUT"; //
+    static readonly string SPROUT = "SPROUT";
 
 
     void Walk(float speed) {
@@ -97,6 +98,15 @@ public class PlayerController : MonoBehaviour {
 
     void Dig(bool dig = true) {
         animator.SetBool(DIG,dig);
+    }
+
+    public bool isInState(string state) {
+
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName(state)) {
+            return true;
+        }
+
+        return false;
     }
 
     #endregion
