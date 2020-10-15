@@ -32,10 +32,15 @@ public class PlayerController : MonoBehaviour {
        
 
         //HIDING or na
-        if (Input.GetKey(KeyCode.Mouse0) && IsOn(hiddenLayer)) {
-            //Debug.Log(" je me cache / animation de creusage tu sais deja");
-            Hidding();
-        } else if (!Input.GetKey(KeyCode.Mouse0) && IsOn(hiddenLayer)) {
+        if (Input.GetKey(KeyCode.Mouse0)) {
+
+            if (agent.enabled == true && IsOn(hiddenLayer)) {
+
+                //Debug.Log(" je me cache / animation de creusage tu sais deja");
+                Hidding();
+            }
+            
+        } else {
             //Debug.Log("JETAIS CACHE");
             NotHidding();
         }
@@ -62,6 +67,9 @@ public class PlayerController : MonoBehaviour {
         controller.Move(Physics.gravity);
     }
 
+    public void setAgent(bool active = true) {
+        agent.enabled = active;
+    }
     
     // Is mouse currently on "area"
     public bool IsOn(string area) {
@@ -77,10 +85,12 @@ public class PlayerController : MonoBehaviour {
 
     void Hidding() {
         Dig();
+       
         gameObject.layer = (1 << NavMesh.GetAreaFromName(hiddenLayer));
     }
     void NotHidding() {
         Dig(false);
+       
         gameObject.layer = defaultLayer;
     }
 
@@ -98,6 +108,7 @@ public class PlayerController : MonoBehaviour {
 
     void Dig(bool dig = true) {
         animator.SetBool(DIG,dig);
+       
     }
 
     public bool isInState(string state) {
