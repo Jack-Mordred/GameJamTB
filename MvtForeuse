@@ -1,0 +1,186 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
+using UnityEditor.Animations;
+using UnityEngine;
+
+public class MvtForeuse : MonoBehaviour
+{
+    
+    //qui vérifie si on touche l'argile (L'argile est un disque épais marron pour l'instant).
+    public bool terrainEstMeuble = false;//activé par OncolissionStay(); ancienement activé et désactivé par le script Argile 
+    public bool estInvisible= false;//indique si valdo est dans le sol donc j'ai lié cela au mouvement de remonté et de descente car 
+    Rigidbody rb;
+    Collider[] colliders;
+    public float forceJetPack = 71;
+    public float carburant=10, reservoir = 10;//reservoir servira à faire une jauge ou un équivalent (reservoir c.a.d carburant max)
+    float translation = 0,bouge=1, rotation = 0;//bouge sert à empecher la foreuse de bouger quand elle creuse (j'ai mis bouge=0 dans le code pour la fixer quand neccessaire))
+    public float speed=4,rotationSpeed=100;//rotationSpeed=100 , 50 est aussi une bonne vitesse
+    public float vitesseCreusage = 1.5f, vitesseRemontee = 1.5f;
+    public float yInitial;
+
+
+    private Animator animValdo;
+    private AnimatorStateInfo stateInfo;
+    private AnimatorState state;//je ne trouve pas l'équivalent de Getcomponent() pour accéder au State actif
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        colliders = GetComponentsInChildren<Collider>();//j'ai eu besoin de désactiver tous les colliders aparentés à la foreuse
+        //(les codes liées à cette variable marchent du tonnerre mais ne servent plus)
+        animValdo=GetComponent<Animator>();
+    }
+
+    // Update is called once per frame
+    void FixedUpdate() 
+    {
+        //vitesses à rendre publiques et il faut remplacer les inputs par des getAxis ou ajouter les touches zqsd et wasd;
+        /*if (Input.GetKey("up"))
+        {
+            this.gameObject.transform.Translate(0, 0, 4 * Time.deltaTime);
+        }
+        if (Input.GetKey("right"))
+        {
+            this.gameObject.transform.Rotate(0, 100 * Time.deltaTime,0);//50
+        }
+        if (Input.GetKey("left"))//la gauche ne marche pas quand la foreuse est sous terre : bizard
+        {
+            this.gameObject.transform.Rotate(0, -100 * Time.deltaTime, 0);//50
+        }*/
+        translation = Input.GetAxis("Vertical");//.vitesse =Input.GetAxis("Vertical") ;
+        translation *= speed;
+        //animValdo.SetFloat("vitesse", translation);//IMPORTANT: à décommenter après le test juste en dessous
+        rotation = Input.GetAxis("Horizontal");
+        rotation *= rotationSpeed;
+        float speedAnim = new Vector3(rotation, 0, translation).magnitude;//seulement pour dire quand l'animation bouge
+        animValdo.SetFloat("vitesse", speedAnim);//pour faire des tests mais sans vitesse d'animation.finalement fonctionne très bien
+        this.gameObject.transform.Translate(0, 0,Time.deltaTime*translation*bouge);
+        this.gameObject.transform.Rotate(0, Time.deltaTime* rotation*bouge, 0);
+
+        if (Input.GetKey("space"))//pour le moment ça creuse!!! saut à ajouter plus tard même si diagno n'en veut pas pour faire des tests
+        {
+           
+            //Projet de base: mettre un chrono avec activation foreuse au début et désactivation à la fin
+            //mais finallement stateinfo.normalizedTimeest plus précis 
+            animValdo.SetTrigger("valdoCreuse");//tenter de remplacer par un booleen
+            if (terrainEstMeuble)
+            {
+                bouge = 0;//si on veux empecher le foreuse de bouger
+
+                stateInfo = animValdo.GetCurrentAnimatorStateInfo(0);
+                
+                if (stateInfo.normalizedTime >= 1 && (stateInfo.IsName("Valdo_dig05")))
+                {
+
+                    //rb.isKinematic = true;//Methode 2 Peut remplacer si Methode 1  avec usegravity pas efficace
+
+                    //Methode 1 pour Permettre le creusage//désactiver gravité et collider
+                    estInvisible = true;Debug.Log("Valdo est à l'abri (invisible)");
+                    rb.useGravity = false;
+                    foreach (Collider item in colliders)//désactivation du collider pour qu'elle puisse s'enfoncer dans le sol
+                    {
+                        item.enabled = false;
+                    }
+                    //fin methode1
+                    if (terrainEstMeuble)//diagno veut des zones creusables donc: à tester 
+                                         //avec Oncollission ou Ontriggerenter lié au collider de la zone 
+                                         //(ex:un objet plan nommé "Argile" avec un script Argile) 
+                                         //le script Argile indique que MvtForeuse.terrainEstMeuble est vrai si la foreuse touche l'argile.
+
+                    {
+                        if (gameObject.transform.position.y > yInitial-0.7)//on creuse!!//profondeur// -0.7 est une bonne profondeur
+                        {
+                            this.gameObject.transform.Translate(0, -vitesseCreusage * Time.deltaTime, 0);
+                            if(gameObject.transform.position.y < yInitial-0.5) //choisir une grande que la profrondeur -0.5 si profondeur de-0.7
+                            {
+                                Debug.LogWarning(" Valdo touche le fond");
+                                
+                                //animValdo.ResetTrigger("valdoCreuse");
+                                //state.mirror = true;//renverser sens de la foreuse: ne fonctionne pas ce n'est pas le state actif
+                                //animValdo.ResetTrigger("valdoCreuse");//arreter la foreuse: ne fonctionne pas: remplacer par un booléen?
+                            }
+                        }
+
+
+                    }
+                }
+            }
+        }
+        //quand on ne creuse pas (barre espace relachée): on remonte à la surface
+        else if (gameObject.transform.position.y < yInitial-0.2) //toujours mettre la position d'arrivéé un peu en dessous de la position initiale proto y<1.4 (prototype sur le sol)
+        {
+            this.gameObject.transform.Translate(0, vitesseRemontee * Time.deltaTime, 0);//1.5f est une bonne vitesse de remonté
+
+            //bouge = 1;// une erreur car illogique//Permet de se déplacer sous le sol mais seulement quand la foreuse remonte
+        }
+        else //réactive gravité et collider (ou désactive kinématic) quand on dépasse le niveau 0 environt y=1.4 pour le prototype 
+        {
+
+            animValdo.ResetTrigger("valdoCreuse");
+            bouge = 1;
+
+
+            //rb.isKinematic = false;//Methode 2 Peut remplacer methode 1 si usegravity pas efficace
+
+
+            //Methode 1 pour arreter de permettre le creusage
+            estInvisible = false; Debug.Log("Valdo est visible par les rubix");
+            rb.useGravity = true;
+            //col.enabled = false; cela désactivait seulement le collider centrale ( Collider col; ) donc code désuet
+            foreach (Collider item in colliders)//réactive tous le colliders s'utilise avec rb.useGravity
+            {
+                item.enabled = true;
+            }
+
+        }
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+
+            if (carburant > 0)
+            {
+                rb.AddRelativeForce(gameObject.transform.up * forceJetPack);
+                carburant -= Time.deltaTime;
+                
+                
+            }
+            if (carburant <0 )
+            {
+                carburant = 0;
+            }
+            
+        }
+
+        Debug.Log("Carburant= " + carburant + "/" + reservoir);
+    }
+
+    //ne fonctionne que quand Valdo ne creuse pas, car désactivation du box collider quand il creuse
+    //donc il garde en mémoire sa derniere hauteur (yInitial) avant qu'il commence à creuser pour pouvoir remonter à la bonne hauteur
+    private void OnCollisionStay(Collision collision)//detecte quand Valdo est en contact avec le terrain creusable
+    {
+        if (collision.collider.tag == "Argile")//ne pas oublier de mette le tag "Argile" sur le prefab de terrain creusable
+        {
+            terrainEstMeuble = true;
+            yInitial = this.gameObject.transform.position.y;//indique à quelle hauteur Valdo à commencé à creuser
+            
+        }
+        else { terrainEstMeuble = false;  }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.collider.tag == "Argile")
+        {
+            animValdo.ResetTrigger("valdoCreuse");
+        }
+    }
+    /*private void OnCollisionExit(Collision collision)
+    {
+       // if (collision.collider.tag == "Argile")
+       // {
+            terrainEstMeuble = false;
+       // }
+    }*/
+}
